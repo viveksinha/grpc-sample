@@ -1,0 +1,139 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.via.flight.services";
+option java_outer_classname = "FlightSearch";
+import "google/protobuf/Timestamp.proto";
+import "google/protobuf/descriptor.proto";
+import "google/protobuf/any.proto";
+
+//Request
+message FlightSearchRequest {
+    repeated SectorInfos sectorInfoList = 1;
+    CabinClass cabinClass = 2;
+    map<string, int32> passengerCount = 3;
+    Routing routing = 4;
+    bool isDiscounted = 5;
+    bool isMultiHop = 6;
+    bool isMultiCity = 7;
+}
+
+extend google.protobuf.EnumValueOptions {
+    string type = 51234;
+    string shortCode = 51235;
+    string singleCharCode = 51236;
+
+}
+
+enum PaxType {
+    ADULT = 0 [(type) = "ADT", (singleCharCode) = 'A'];
+    CHILD = 1 [(type) = "CNN", (singleCharCode) = 'C'];
+    INFANT = 2 [(type) = "IFT", (singleCharCode) = 'I'];
+}
+
+
+enum Routing {
+    AL = 0 [(shortCode) = "A"];
+    DIRECT = 1 [(shortCode) = "D"];
+    DIRECT_NONSTOP = 2 [(shortCode) = "N"];
+    SINGLE_CONNECTING = 3 [(shortCode) = ""];
+}
+
+enum CabinClass {
+    ALL = 0;
+    FIRST = 1;
+    BUSINESS = 2;
+    ECONOMY = 3;
+    ECONOMY_FULL = 4;
+    ECONOMY_PREMIUM = 5;
+    REFUNDABLE = 6;
+    OTHERS = 7;
+}
+
+message SectorInfos {
+    AirportDesc source = 1;
+    AirportDesc destination = 2;
+    google.protobuf.Timestamp date = 3;
+}
+
+message AirportDesc {
+
+    string code = 1;
+    string name = 2;
+    string country = 3;
+    string city = 4;
+}
+
+// Response
+message FlightSearchResponse {
+    repeated SearchResultJourneyDetail onwardJourneys = 1;
+    repeated SearchResultJourneyDetail returnJourneys = 2;
+    bool isDomestic = 3;
+
+}
+
+message SearchResultJourneyDetail {
+    FareDetails fares = 1;
+    bool isBlockingAllowed = 2;
+    bool isNearByAirport = 3;
+    repeated FlightData flightDataList = 4;
+    string key = 5;
+    repeated JourneyInfo journeyInfoList = 6;
+}
+
+message JourneyInfo {
+    int64 journeyTime = 1;
+}
+
+message FlightData {
+    int32 key = 1;
+    CarrierDesc carrier = 2;
+    FlightDataAirportDesc departureDetail = 3;
+    FlightDataAirportDesc arrivalDetail = 4;
+    string flightNumber = 5;
+    map<string, FareClassData> fareClassData = 6;
+    int64 flightTime = 7;
+    bool refundable = 8;
+    bool isOnlyHandbaggage = 9;
+    CabinClass cabinClass = 10;
+}
+
+message FareClassData {
+    string cls = 1;
+    string fareBasis = 2;
+    CabinClass cabinClass = 3;
+}
+
+message FlightDataAirportDesc {
+    oneof AirportDesc {
+        string code = 1;
+        string name = 2;
+        string country = 3;
+        string city = 4;
+    }
+    google.protobuf.Timestamp time = 5;
+    string terminal = 6;
+}
+
+message CarrierDesc {
+    string code = 1;
+    string name = 2;
+}
+
+message FareDetails {
+    map<string, FareValue> totalFareDetail = 1;
+}
+
+enum FareType {
+    TOTAL = 0;
+    TAXES = 1;
+    BASE_FARE = 2;
+}
+message FareValue {
+    double amount = 1;
+    string desc = 2;
+}
+service FlightSearchService {
+    rpc search (FlightSearchRequest) returns (FlightSearchResponse);
+    rpc streamSearch (stream FlightSearchRequest) returns (stream FlightSearchResponse);
+}
