@@ -1,4 +1,4 @@
-package com.via.flight.search;
+package com.via.grpcclient;
 
 import com.via.flight.services.FlightSearchRequest;
 import com.via.flight.services.FlightSearchResponse;

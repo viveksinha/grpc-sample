@@ -1,4 +1,4 @@
-package com.via.flight.search;
+package com.via.grpcclient;
 
 import java.io.IOException;
 
